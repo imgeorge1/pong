@@ -25,7 +25,7 @@
         const config = {
             type: Phaser.AUTO,
             width: 400,
-            height: 600,
+            height: 700,
             backgroundColor: '#222222',
             physics: {
                 default: 'arcade',
@@ -44,7 +44,7 @@
         const game = new Phaser.Game(config);
 
         let paddle, ball, score = 0, scoreText;
-        const speedIncrement = 10; // Ball speed increases by this value after each paddle hit
+        const speedIncrement = 20; // Ball speed increases by this value after each paddle hit
 
         function preload() {
             // No external assets to load
@@ -52,7 +52,7 @@
 
         function create() {
             // Create the paddle
-            paddle = this.add.rectangle(config.width / 2, config.height - 50, 120, 20, 0xffffff);
+            paddle = this.add.rectangle(config.width / 2, config.height - 150, 120, 20, 0xffffff);
             this.physics.add.existing(paddle);
             paddle.body.setImmovable(true);
             paddle.body.setCollideWorldBounds(true);
@@ -70,7 +70,7 @@
             this.physics.add.existing(ball);
             ball.body.setCollideWorldBounds(true);
             ball.body.setBounce(1, 1);
-            ball.body.setVelocity(150, -150);
+            ball.body.setVelocity(Phaser.Math.Between(-50, 50), Phaser.Math.Between(-100, -150));
 
             // Score text
             scoreText = this.add.text(config.width / 2, config.height / 2 - 20, 'SCORE: 0', {
