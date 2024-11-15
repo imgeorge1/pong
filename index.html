@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Single-Player Pong with Phaser</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #111111;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        // Game configuration
+        const config = {
+            type: Phaser.AUTO,
+            width: 400,
+            height: 600,
+            backgroundColor: '#222222',
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 0 },
+                    debug: false,
+                },
+            },
+            scene: {
+                preload: preload,
+                create: create,
+                update: update,
+            },
+        };
+
+        const game = new Phaser.Game(config);
+
+        let paddle, ball, score = 0, scoreText;
+        const speedIncrement = 10; // Ball speed increases by this value after each paddle hit
+
+        function preload() {
+            // No external assets to load
+        }
+
+        function create() {
+            // Create the paddle
+            paddle = this.add.rectangle(config.width / 2, config.height - 50, 120, 20, 0xffffff);
+            this.physics.add.existing(paddle);
+            paddle.body.setImmovable(true);
+            paddle.body.setCollideWorldBounds(true);
+
+            // Enable dragging for the paddle
+            paddle.setInteractive({ draggable: true });
+            this.input.setDraggable(paddle);
+
+            this.input.on('drag', (pointer, gameObject, dragX) => {
+                gameObject.x = Phaser.Math.Clamp(dragX, gameObject.width / 2, config.width - gameObject.width / 2);
+            });
+
+            // Create the ball
+            ball = this.add.circle(config.width / 2, config.height / 2, 10, 0xffffff);
+            this.physics.add.existing(ball);
+            ball.body.setCollideWorldBounds(true);
+            ball.body.setBounce(1, 1);
+            ball.body.setVelocity(150, -150);
+
+            // Score text
+            scoreText = this.add.text(config.width / 2, config.height / 2 - 20, 'SCORE: 0', {
+                fontSize: '28px',
+                fill: '#ffffff',
+            });
+            scoreText.setOrigin(0.5, 0); // Center the text
+
+            // Add collision detection between ball and paddle
+            this.physics.add.collider(ball, paddle, hitPaddle, null, this);
+        }
+
+        function update() {
+            // Restart the game if the ball falls below the paddle
+            if (ball.y > paddle.y + 10) {
+                this.scene.restart(); // Restart the scene
+                score = 0; // Reset score
+            }
+        }
+
+        function hitPaddle(ball, paddle) {
+            // Adjust ball velocity based on where it hits the paddle
+            const diff = ball.x - paddle.x;
+            ball.body.setVelocityX(diff * 5);
+
+            // Increment score
+            score += 1;
+            scoreText.setText('SCORE: ' + score);
+
+            // Increase ball speed
+            const currentVelocityX = ball.body.velocity.x;
+            const currentVelocityY = ball.body.velocity.y;
+
+            // Scale the velocity vector by adding the speed increment proportionally
+            const speedMultiplier = 1 + speedIncrement / Math.sqrt(currentVelocityX ** 2 + currentVelocityY ** 2);
+            ball.body.setVelocity(currentVelocityX * speedMultiplier, currentVelocityY * speedMultiplier);
+        }
+    </script>
+</body>
+</html>
